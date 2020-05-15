@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: order
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 990812
+    url: jdbc:mysql://192.168.0.7:3306/sell?characterEncoding=utf-8&useSSL=false&serverTimezone=GMT
+    jpa:
+      show-sql: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+ribbon:
+  ReadTimeout: 30000
+  ConnectTimeout: 30000
