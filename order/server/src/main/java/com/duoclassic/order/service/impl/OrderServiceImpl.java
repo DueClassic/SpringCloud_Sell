@@ -2,8 +2,6 @@ package com.duoclassic.order.service.impl;
 
 import com.duoclassic.order.dataobject.OrderDetail;
 import com.duoclassic.order.dataobject.OrderMaster;
-import com.duoclassic.order.dataobject.ProductInfo;
-import com.duoclassic.order.dto.CartDTO;
 import com.duoclassic.order.dto.OrderDTO;
 import com.duoclassic.order.enums.OrderStatusEnum;
 import com.duoclassic.order.enums.PayStatusEnum;
@@ -39,7 +37,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderDTO create(OrderDTO orderDTO) {
         String orderId = KeyUtil.genUniqueKey();
 
-        //查询商品信息(调用商品服务)
+        //1查询商品信息(调用商品服务)
         List<String> productIdList = orderDTO.getOrderDetailList().stream()
                 .map(OrderDetail::getProductId)
                 .collect(Collectors.toList());
@@ -57,19 +55,19 @@ public class OrderServiceImpl implements OrderService {
                     BeanUtils.copyProperties(productInfo, orderDetail);
                     orderDetail.setOrderId(orderId);
                     orderDetail.setDetailId(KeyUtil.genUniqueKey());
-                    //订单详情入库
+                    //2订单详情入库
                     orderDetailRepository.save(orderDetail);
                 }
             }
         }
 
-        //扣库存(调用商品服务)
+        //3扣库存(调用商品服务)
         List<DecreaseStockInput> decreaseStockInputList = orderDTO.getOrderDetailList().stream()
                 .map(e -> new DecreaseStockInput(e.getProductId(), e.getProductQuantity()))
                 .collect(Collectors.toList());
         productClient.decreaseStock(decreaseStockInputList);
 
-        //订单入库
+        //4订单入库
         OrderMaster orderMaster = new OrderMaster();
         orderDTO.setOrderId(orderId);
         BeanUtils.copyProperties(orderDTO, orderMaster);
@@ -78,6 +76,5 @@ public class OrderServiceImpl implements OrderService {
         orderMaster.setPayStatus(PayStatusEnum.WAIT.getCode());
         orderMasterRepository.save(orderMaster);
         return orderDTO;
-
     }
 }

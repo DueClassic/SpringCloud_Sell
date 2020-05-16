@@ -2,6 +2,7 @@ spring:
   application:
     name: order
   cloud:
+    #统一配置中心
     config:
       discovery:
         enabled: true
@@ -9,6 +10,12 @@ spring:
       profile: dev
     bus:
       id: ${vcap.application.name:${spring.application.name:application}}:${vcap.application.instance_index:${spring.cloud.config.profile:${local.server.port:${server.port:0}}}}:${vcap.application.instance_id:${random.value}}
+    #消息队列分组
+    stream:
+      bindings:
+        myMessage:
+          group: order
+          content-type: application/json
 eureka:
   client:
     service-url:
