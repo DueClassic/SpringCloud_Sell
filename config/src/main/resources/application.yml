@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: config
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/DueClassic/config-repo
+          username: 1219784057@qq.com
+          password: cc1999chen
+          basedir: F:\IntelliJ_Project\SpringCloud_Sell\config\basedir
+  rabbitmq:
+    host: 192.168.0.7
+    port: 5672
+    username: guest
+    password: guest
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
