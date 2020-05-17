@@ -5,6 +5,8 @@ import com.duoclassic.order.dataobject.OrderMaster;
 import com.duoclassic.order.dto.OrderDTO;
 import com.duoclassic.order.enums.OrderStatusEnum;
 import com.duoclassic.order.enums.PayStatusEnum;
+import com.duoclassic.order.enums.ResultEnum;
+import com.duoclassic.order.exception.OrderException;
 import com.duoclassic.order.repository.OrderDetailRepository;
 import com.duoclassic.order.repository.OrderMasterRepository;
 import com.duoclassic.order.service.OrderService;
@@ -15,10 +17,13 @@ import com.duoclassic.product.common.ProductInfoOutput;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private ProductClient productClient;
 
     @Override
+    @Transactional
     public OrderDTO create(OrderDTO orderDTO) {
         String orderId = KeyUtil.genUniqueKey();
 
@@ -75,6 +81,33 @@ public class OrderServiceImpl implements OrderService {
         orderMaster.setOrderStatus(OrderStatusEnum.NEW.getCode());
         orderMaster.setPayStatus(PayStatusEnum.WAIT.getCode());
         orderMasterRepository.save(orderMaster);
+        return orderDTO;
+    }
+
+    @Override
+    @Transactional
+    public OrderDTO finish(String orderId) {
+        Optional<OrderMaster> orderMasterOptional = orderMasterRepository.findById(orderId);
+        if (!orderMasterOptional.isPresent()){
+            throw new OrderException(ResultEnum.ORDER_NOT_EXIST);
+        }
+
+        OrderMaster orderMaster = orderMasterOptional.get();
+        if (OrderStatusEnum.NEW.getCode()!=orderMaster.getOrderStatus()){
+            throw new OrderException(ResultEnum.ORDER_STATUS_ERROR);
+        }
+
+        orderMaster.setOrderStatus(OrderStatusEnum.FINISHED.getCode());
+        orderMasterRepository.save(orderMaster);
+
+        List<OrderDetail> orderDetailList = orderDetailRepository.findByOrderId(orderId);
+        if (CollectionUtils.isEmpty(orderDetailList)){
+            throw new OrderException(ResultEnum.ORDER_DETAIL_NOT_EXIST);
+        }
+
+        OrderDTO orderDTO=new OrderDTO();
+        BeanUtils.copyProperties(orderMaster,orderDTO);
+        orderDTO.setOrderDetailList(orderDetailList);
         return orderDTO;
     }
 }

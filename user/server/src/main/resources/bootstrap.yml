@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: user
+  cloud:
+    #\u7EDF\u4E00\u914D\u7F6E\u4E2D\u5FC3
+    config:
+      discovery:
+        enabled: true
+        service-id: CONFIG
+      profile: dev
+    bus:
+      id: ${vcap.application.name:${spring.application.name:application}}:${vcap.application.instance_index:${spring.cloud.config.profile:${local.server.port:${server.port:0}}}}:${vcap.application.instance_id:${random.value}}
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
